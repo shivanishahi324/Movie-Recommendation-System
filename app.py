@@ -4,14 +4,18 @@ import pandas as pd
 import requests
 
 # Load similarity from Google Drive
+import gdown
+import os
+
 def load_similarity():
-    url = "https://drive.google.com/uc?export=download&id=1VLglft-aUiGAHYbPWH8HfQt2hdlXyH6Z"
-    response = requests.get(url)
+    file_id = "1VLglft-aUiGAHYbPWH8HfQt2hdlXyH6Z"
+    output = "similarity.pkl"
 
-    with open("similarity.pkl", "wb") as f:
-        f.write(response.content)
+    if not os.path.exists(output):
+        url = f"https://drive.google.com/uc?id={file_id}"
+        gdown.download(url, output, quiet=False)
 
-    return pickle.load(open("similarity.pkl", "rb"))
+    return pickle.load(open(output, "rb"))
 
 # Fetch movie poster
 def fetch_poster(movie_id):

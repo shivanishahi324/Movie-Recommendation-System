@@ -3,32 +3,54 @@ import pickle
 import pandas as pd
 import requests
 
+# Load similarity from Google Drive
+def load_similarity():
+    url = "https://drive.google.com/uc?id=1VLglft-aUiGAHYbPWH8HfQt2hdlXyH6Z"
+    response = requests.get(url)
+    return pickle.loads(response.content)
+
+# Fetch movie poster
 def fetch_poster(movie_id):
     url = f"https://api.themoviedb.org/3/movie/{movie_id}?api_key=3841e9ba7e48000ca352e94021c913ea&language=en-US"
     data = requests.get(url).json()
-    poster_path = data['poster_path']
-    return "https://image.tmdb.org/t/p/w500/" + poster_path
 
+    poster_path = data.get('poster_path')
+
+    if poster_path:
+        return "https://image.tmdb.org/t/p/w500/" + poster_path
+    else:
+        return "https://via.placeholder.com/500x750"
+
+# Recommendation function
 def recommend(movie):
     movie_index = movies[movies['title'] == movie].index[0]
     distances = similarity[movie_index]
-    movies_list = sorted(list(enumerate(distances)), reverse=True, key=lambda x: x[1])[1:6]
+
+    movies_list = sorted(
+        list(enumerate(distances)),
+        reverse=True,
+        key=lambda x: x[1]
+    )[1:6]
 
     recommended_movies = []
-    recommended_movies_posters = []
+    recommended_posters = []
 
     for i in movies_list:
-        movie_id = movies.iloc[i[0]].movie_id   # ✅ FIXED
+        movie_id = movies.iloc[i[0]].movie_id
         recommended_movies.append(movies.iloc[i[0]].title)
-        recommended_movies_posters.append(fetch_poster(movie_id))
+        recommended_posters.append(fetch_poster(movie_id))
 
-    return recommended_movies, recommended_movies_posters
+    return recommended_movies, recommended_posters
 
+
+# Load movie data
 movies_dict = pickle.load(open('movie_dict.pkl', 'rb'))
 movies = pd.DataFrame(movies_dict)
 
-similarity = pickle.load(open('similarity.pkl', 'rb'))
+# Load similarity matrix from Drive
+similarity = load_similarity()
 
+# UI
 st.title('Movie Recommendation System')
 
 selected_movie_name = st.selectbox(

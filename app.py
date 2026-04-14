@@ -5,9 +5,13 @@ import requests
 
 # Load similarity from Google Drive
 def load_similarity():
-    url = "https://drive.google.com/uc?id=1VLglft-aUiGAHYbPWH8HfQt2hdlXyH6Z"
+    url = "https://drive.google.com/uc?export=download&id=1VLglft-aUiGAHYbPWH8HfQt2hdlXyH6Z"
     response = requests.get(url)
-    return pickle.loads(response.content)
+
+    with open("similarity.pkl", "wb") as f:
+        f.write(response.content)
+
+    return pickle.load(open("similarity.pkl", "rb"))
 
 # Fetch movie poster
 def fetch_poster(movie_id):
